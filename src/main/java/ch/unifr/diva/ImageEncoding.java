@@ -41,9 +41,9 @@ public class ImageEncoding {
             ImageIO.write(image, "png", outputStream);
             byte[] data = outputStream.toByteArray();
             MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(data);
+            md.update(Base64.encodeBase64(data));
             byte[] hash = md.digest();
-            System.out.println(Arrays.toString(hash));
+            return hexString(hash);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -61,5 +61,15 @@ public class ImageEncoding {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static String hexString(byte[] bytes) {
+        StringBuffer hexString = new StringBuffer();
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(0xff & bytes[i]);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }

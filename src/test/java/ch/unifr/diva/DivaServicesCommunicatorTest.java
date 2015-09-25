@@ -69,7 +69,8 @@ public class DivaServicesCommunicatorTest
 
     public void testUploadImage() throws IOException{
         BufferedImage image = ImageIO.read(new File("/home/lunactic/Downloads/csg562-005.png"));
-        ImageEncoding.encodeToMd5(image);
-        DivaServicesCommunicator.uploadImage(image);
+        String sourceMd5 = ImageEncoding.encodeToMd5(image);
+        String targetMd5 = DivaServicesCommunicator.uploadImage(image);
+        assertEquals(sourceMd5,targetMd5);
     }
 }
