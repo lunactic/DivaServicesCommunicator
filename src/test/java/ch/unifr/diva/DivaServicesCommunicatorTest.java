@@ -73,4 +73,10 @@ public class DivaServicesCommunicatorTest
         String targetMd5 = DivaServicesCommunicator.uploadImage(image);
         assertEquals(sourceMd5,targetMd5);
     }
+
+    public void testHistogramTextLineExtractionMdt() throws IOException{
+        BufferedImage image = ImageIO.read(new File("/home/lunactic/Downloads/csg562-005.png"));
+        String sourceMd5 = ImageEncoding.encodeToMd5(image);
+    }
+
 }

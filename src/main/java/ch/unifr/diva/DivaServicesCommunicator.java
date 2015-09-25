@@ -3,6 +3,7 @@ package ch.unifr.diva;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -198,6 +199,31 @@ public class DivaServicesCommunicator {
     }
 
     /**
+     * executes a GET request
+     * @param url
+     * @return
+     */
+    private static JSONObject executeGet(String url){
+        HttpClient client = new DefaultHttpClient();
+        HttpGet get = new HttpGet(url);
+        try {
+            HttpResponse response = client.execute(get);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                // A Simple JSON Response Read
+                InputStream instream = entity.getContent();
+                JSONObject result = new JSONObject(convertStreamToString(instream));
+                instream.close();
+                return result;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+
+    }
+
+    /**
      * converts a Rectangle into a List<int[]> for sending it as JSON
      * @param rectangle the rectangle
      * @return a List<int[]>
@@ -253,6 +279,7 @@ public class DivaServicesCommunicator {
         return rectangles;
     }
 
+
     private static List<Point> extractPoints(JSONObject result){
         JSONArray highlighters = result.getJSONArray("highlighters");
         List<Point> points = new ArrayList<>();
@@ -264,7 +291,6 @@ public class DivaServicesCommunicator {
         }
         return points;
     }
-
     /**
      * Converst an input stream to a json string
      *
@@ -293,4 +319,32 @@ public class DivaServicesCommunicator {
         return sb.toString();
     }
 
+    /**
+     * TODO: Use this method in all image calls to reduce payload
+     *
+     * Checks if an image is available on the server
+     * @param image The image
+     * @return True if the image is already saved on the server, false otherwise
+     */
+    private static boolean checkImageOnServer(BufferedImage image){
+        String md5 = ImageEncoding.encodeToMd5(image);
+        String url = "http://127.0.0.1:8080/image/" + md5;
+        JSONObject response = executeGet(url);
+        return response.getBoolean("imageAvailable");
+    }
+
+    /**
+     * checks if an image is available on the server and responds with the correct JSONObject for the request payload
+     * @param image
+     * @return
+     */
+    private static JSONObject checkImage(BufferedImage image){
+        JSONObject result = new JSONObject();
+        if(!checkImageOnServer(image)){
+            result.put("image", ImageEncoding.encodeToBase64(image));
+        }else{
+            result.put("md5Image", ImageEncoding.encodeToMd5(image));
+        }
+        return result;
+    }
 }
