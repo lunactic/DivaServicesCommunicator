@@ -23,19 +23,28 @@ import java.util.List;
 
 public class DivaServicesCommunicator {
 
-
+    /**
+     * uploads an image to the server
+     *
+     * @param image the image to upload
+     * @return the md5Hash to use in future requests
+     */
     public static String uploadImage(BufferedImage image){
-        String base64Image = ImageEncoding.encodeToBase64(image);
-        Map<String, Object> highlighter = new HashMap();
+        if(!checkImageOnServer(image)) {
+            String base64Image = ImageEncoding.encodeToBase64(image);
+            Map<String, Object> highlighter = new HashMap();
 
-        JSONObject request = new JSONObject();
-        JSONObject high = new JSONObject(highlighter);
-        JSONObject inputs = new JSONObject();
-        request.put("highlighter", high);
-        request.put("inputs", inputs);
-        request.put("image", base64Image);
-        JSONObject result = executePost("http://127.0.0.1:8080/upload", request);
-        return result.getString("md5");
+            JSONObject request = new JSONObject();
+            JSONObject high = new JSONObject(highlighter);
+            JSONObject inputs = new JSONObject();
+            request.put("highlighter", high);
+            request.put("inputs", inputs);
+            request.put("image", base64Image);
+            JSONObject result = executePost("http://127.0.0.1:8080/upload", request);
+            return result.getString("md5");
+        }else{
+            return ImageEncoding.encodeToMd5(image);
+        }
 
     }
 
@@ -45,15 +54,15 @@ public class DivaServicesCommunicator {
      * @return
      */
     public static BufferedImage runOtsuBinarization(BufferedImage image){
-        String base64Image = ImageEncoding.encodeToBase64(image);
         Map<String, Object> highlighter = new HashMap();
-
+        //TODO: ADD THE CORRECT IMAGE TO THE REQUEST
+        JSONObject imageObj = checkImage(image);
         JSONObject request = new JSONObject();
         JSONObject high = new JSONObject(highlighter);
         JSONObject inputs = new JSONObject();
         request.put("highlighter", high);
         request.put("inputs", inputs);
-        request.put("image", base64Image);
+        //request.put("image", base64Image);
         JSONObject result = executePost("http://divaservices.unifr.ch/imageanalysis/binarization/otsu", request);
         String resImage = (String)result.get("image");
         return ImageEncoding.decodeBas64(resImage);
@@ -291,8 +300,9 @@ public class DivaServicesCommunicator {
         }
         return points;
     }
+
     /**
-     * Converst an input stream to a json string
+     * Converts an input stream to a json string
      *
      * @param is
      * @return
