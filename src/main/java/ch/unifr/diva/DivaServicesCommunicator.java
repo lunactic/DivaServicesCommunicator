@@ -55,14 +55,12 @@ public class DivaServicesCommunicator {
      */
     public static BufferedImage runOtsuBinarization(BufferedImage image){
         Map<String, Object> highlighter = new HashMap();
-        //TODO: ADD THE CORRECT IMAGE TO THE REQUEST
-        JSONObject imageObj = checkImage(image);
         JSONObject request = new JSONObject();
         JSONObject high = new JSONObject(highlighter);
         JSONObject inputs = new JSONObject();
         request.put("highlighter", high);
         request.put("inputs", inputs);
-        //request.put("image", base64Image);
+        addImageToRequest(image,request);
         JSONObject result = executePost("http://divaservices.unifr.ch/imageanalysis/binarization/otsu", request);
         String resImage = (String)result.get("image");
         return ImageEncoding.decodeBas64(resImage);
@@ -81,7 +79,6 @@ public class DivaServicesCommunicator {
      * @return A list of points, representing the interest points
      */
     public static List<Point> runMultiScaleInterestPointDetection(BufferedImage image, String detector, float blurSigma, int numScales, int numOctaves, float threshold, int maxFeaturesPerScale){
-        String base64Image = ImageEncoding.encodeToBase64(image);
         DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
         df.setMaximumFractionDigits(10); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
 
@@ -97,8 +94,7 @@ public class DivaServicesCommunicator {
 
         request.put("highlighter", high);
         request.put("inputs", inputs);
-        request.put("image", base64Image);
-
+        addImageToRequest(image, request);
         //System.out.println(request.toString());
 
         JSONObject result = executePost("http://divaservices.unifr.ch/ipd/multiscale",request);
@@ -113,7 +109,6 @@ public class DivaServicesCommunicator {
      * @return A list of polygons, each representing a text line
      */
     public static List<Rectangle> runHistogramTextLineExtraction(BufferedImage image, Rectangle rectangle){
-        String base64Image = ImageEncoding.encodeToBase64(image);
         Map<String, Object> highlighter = new HashMap();
         highlighter.put("segments", prepareRectangle(rectangle));
         highlighter.put("closed", true);
@@ -124,7 +119,7 @@ public class DivaServicesCommunicator {
         JSONObject inputs = new JSONObject();
         request.put("highlighter", high);
         request.put("inputs", inputs);
-        request.put("image", base64Image);
+        addImageToRequest(image, request);
 
         JSONObject result = executePost("http://divaservices.unifr.ch/segmentation/textline/hist", request);
         // now you have the string representation of the HTML request
@@ -138,7 +133,6 @@ public class DivaServicesCommunicator {
      * @return
      */
     public static BufferedImage runSauvolaBinarization(BufferedImage image) {
-        String base64Image = ImageEncoding.encodeToBase64(image);
         Map<String, Object> highlighter = new HashMap();
 
         JSONObject request = new JSONObject();
@@ -146,7 +140,7 @@ public class DivaServicesCommunicator {
         JSONObject inputs = new JSONObject();
         request.put("highlighter", high);
         request.put("inputs", inputs);
-        request.put("image", base64Image);
+        addImageToRequest(image, request);
         JSONObject result = executePost("http://divaservices.unifr.ch/imageanalysis/binarization/sauvola", request);
         String resImage = (String)result.get("image");
         return ImageEncoding.decodeBas64(resImage);
@@ -158,7 +152,6 @@ public class DivaServicesCommunicator {
      * @return
      */
     public static List<Polygon> runSeamCarvingTextlineExtraction(BufferedImage image, Rectangle rectangle) {
-        String base64Image = ImageEncoding.encodeToBase64(image);
         Map<String, Object> highlighter = new HashMap();
         highlighter.put("segments", prepareRectangle(rectangle));
         highlighter.put("closed", true);
@@ -169,7 +162,7 @@ public class DivaServicesCommunicator {
         JSONObject inputs = new JSONObject();
         request.put("highlighter", high);
         request.put("inputs", inputs);
-        request.put("image", base64Image);
+        addImageToRequest(image, request);
 
         JSONObject result = executePost("http://divaservices.unifr.ch/segmentation/textline/seam", request);
         // now you have the string representation of the HTML request
@@ -338,7 +331,7 @@ public class DivaServicesCommunicator {
      */
     private static boolean checkImageOnServer(BufferedImage image){
         String md5 = ImageEncoding.encodeToMd5(image);
-        String url = "http://127.0.0.1:8080/image/" + md5;
+        String url = "http://divaservices.unifr.ch/image/" + md5;
         JSONObject response = executeGet(url);
         return response.getBoolean("imageAvailable");
     }
@@ -356,5 +349,12 @@ public class DivaServicesCommunicator {
             result.put("md5Image", ImageEncoding.encodeToMd5(image));
         }
         return result;
+    }
+
+    private static void addImageToRequest(BufferedImage image, JSONObject request){
+        JSONObject imageObj = checkImage(image);
+        for(String key : imageObj.keySet()){
+            request.put(key,imageObj.getString(key));
+        }
     }
 }
