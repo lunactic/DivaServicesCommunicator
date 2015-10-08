@@ -39,11 +39,7 @@ public class HttpRequest {
             HttpResponse response = client.execute(post);
             HttpEntity entity = response.getEntity();
             if (entity != null) {
-                // A Simple JSON Response Read
-                InputStream instream = entity.getContent();
-                JSONObject result = new JSONObject(convertStreamToString(instream));
-                instream.close();
-                return result;
+                return parseEntity(entity);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -64,10 +60,7 @@ public class HttpRequest {
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 // A Simple JSON Response Read
-                InputStream instream = entity.getContent();
-                JSONObject result = new JSONObject(convertStreamToString(instream));
-                instream.close();
-                return result;
+                return parseEntity(entity);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -102,4 +95,10 @@ public class HttpRequest {
         return sb.toString();
     }
 
+    private static JSONObject parseEntity(HttpEntity entity) throws IOException{
+        InputStream instream = entity.getContent();
+        JSONObject result = new JSONObject(convertStreamToString(instream));
+        instream.close();
+        return result;
+    }
 }
