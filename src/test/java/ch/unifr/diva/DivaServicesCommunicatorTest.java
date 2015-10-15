@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -38,8 +39,7 @@ public class DivaServicesCommunicatorTest{
     public void testSeamCarving() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         Rectangle rect = new Rectangle(141, 331, 1208, 404);
-        //java.util.List<Polygon> response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(image, rect);
-        DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(image,rect);
+        DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(image,rect,true);
         System.out.println("nr of polygons:" + response.getHighlighter().getData().size());
     }
 
@@ -47,7 +47,7 @@ public class DivaServicesCommunicatorTest{
     public void testSauvolaBinarization() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         //BufferedImage resImage = divaServicesCommunicator.runSauvolaBinarization(image);
-        DivaServicesResponse response = divaServicesCommunicator.runSauvolaBinarization(image);
+        DivaServicesResponse response = divaServicesCommunicator.runSauvolaBinarization(image,true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
 
@@ -72,7 +72,7 @@ public class DivaServicesCommunicatorTest{
     public void testOtsuBinarization() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         //BufferedImage resImage = divaServicesCommunicator.runOtsuBinarization(image);
-        DivaServicesResponse response = divaServicesCommunicator.runOtsuBinarization(image);
+        DivaServicesResponse response = divaServicesCommunicator.runOtsuBinarization(image,true);
         ImageIO.write(response.getImage(), "png", new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008-out.png"));
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
@@ -88,35 +88,50 @@ public class DivaServicesCommunicatorTest{
     @Test
     public void testOcropyPageSegmentation() throws IOException{
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\binary.png"));
-        DivaServicesResponse response = divaServicesCommunicator.runOcropyPageSegmentation(image);
+        DivaServicesResponse response = divaServicesCommunicator.runOcropyPageSegmentation(image,true);
         System.out.println("number of segmented text lines: " + response.getOutput().size());
     }
 
     @Test
     public void testCannyEdgeDetection() throws IOException{
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runCannyEdgeDetection(image);
+        DivaServicesResponse response = divaServicesCommunicator.runCannyEdgeDetection(image,true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
 
     @Test
     public void testHistogramEnhancement() throws IOException{
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runHistogramEnhancement(image);
+        DivaServicesResponse response = divaServicesCommunicator.runHistogramEnhancement(image,true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
     @Test
     public void testLaplacianSharpening() throws IOException{
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runLaplacianSharpening(image,4);
+        DivaServicesResponse response = divaServicesCommunicator.runLaplacianSharpening(image,4,true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
 
     @Test
     public void testOcropyBinarization() throws IOException{
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runOcropyBinarization(image);
+        DivaServicesResponse response = divaServicesCommunicator.runOcropyBinarization(image,true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+    }
+
+    @Test
+    public void testTranscriptionWorkflow() throws IOException{
+        BufferedImage inputImage = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Whiting_diary001.jpg"));
+        //Binarize the image
+        DivaServicesResponse binarizationResult = divaServicesCommunicator.runOtsuBinarization(inputImage,true);
+        //Run ocropy page segmentation
+        DivaServicesResponse pageSegResult = divaServicesCommunicator.runOcropyPageSegmentation(binarizationResult.getImage(),true);
+        //run text extraction for one textline
+        for(String textline : pageSegResult.getOutput().keySet()){
+            DivaServicesResponse textExtraction = divaServicesCommunicator.runOcropyTextExtraction((String)pageSegResult.getOutput().get(textline));
+            System.out.println("transcription of " + textline + ": " + textExtraction.getOutput().get("recognition"));
+        }
+
     }
 
 }
