@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -70,6 +71,32 @@ public class HttpRequest {
     }
 
     /**
+     * Gets a result JSON object from the exeuction response
+     * This method will run GET requests in a 5 second interval until the result is available
+     *
+     *
+     * @param result The JSON object return from the POST request
+     * @param index the result file to retrieve
+     * @return The result JSON object
+     */
+    public static JSONObject getResult(JSONObject result, int index){
+        JSONArray results = result.getJSONArray("results");
+        String url = results.getJSONObject(index).getString("resultLink");
+        JSONObject getResult = executeGet(url);
+        while(!getResult.getString("status").equals("done")){
+            //Result not available yet
+            try {
+                //Wait 5 seconds and try again
+                Thread.sleep(5000);
+                getResult = executeGet(url);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return getResult;
+    }
+
+    /**
      * Converts an input stream to a json string
      *
      * @param is
@@ -101,4 +128,5 @@ public class HttpRequest {
         instream.close();
         return result;
     }
+
 }
