@@ -1,6 +1,7 @@
 package ch.unifr.diva;
 
 import ch.unifr.diva.returnTypes.DivaServicesResponse;
+import com.google.gson.internal.LinkedTreeMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -127,8 +129,12 @@ public class DivaServicesCommunicatorTest{
         //Run ocropy page segmentation
         DivaServicesResponse pageSegResult = divaServicesCommunicator.runOcropyPageSegmentation(binarizationResult.getImage(),true);
         //run text extraction for one textline
-        for(String textline : pageSegResult.getOutput().keySet()){
-            DivaServicesResponse textExtraction = divaServicesCommunicator.runOcropyTextExtraction((String)pageSegResult.getOutput().get(textline));
+        Map<String,Object> map = pageSegResult.getOutput();
+        for(String textline : map.keySet()){
+            String md5 = (String)((LinkedTreeMap)pageSegResult.getOutput().get(textline)).get("md5");
+            String url = (String)((LinkedTreeMap)pageSegResult.getOutput().get(textline)).get("url");
+
+            DivaServicesResponse textExtraction = divaServicesCommunicator.runOcropyTextExtraction(md5,url);
             System.out.println("transcription of " + textline + ": " + textExtraction.getOutput().get("recognition"));
         }
 

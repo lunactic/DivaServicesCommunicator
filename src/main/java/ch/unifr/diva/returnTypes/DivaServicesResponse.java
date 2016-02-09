@@ -1,12 +1,11 @@
 package ch.unifr.diva.returnTypes;
 
 import java.awt.image.BufferedImage;
-import java.nio.Buffer;
-import java.nio.BufferOverflowException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
+import static javafx.scene.input.KeyCode.H;
+import static javafx.scene.input.KeyCode.M;
+import static javafx.scene.input.KeyCode.T;
 
 /**
  * Class encapsulating an image and output information from DivaServices
@@ -16,7 +15,7 @@ import java.util.Optional;
  *         http://diuf.unifr.ch/main/diva/home/people/marcel-w%C3%BCrsch
  *         Created on: 08.10.2015.
  */
-public class DivaServicesResponse {
+public class DivaServicesResponse<H> {
 
     /**
      * extracted image
@@ -29,14 +28,14 @@ public class DivaServicesResponse {
     /**
      * extracted highlighters
      */
-    private IHighlighter highlighter;
+    private AbstractHighlighter<H> highlighter;
     /**
      *
      * @param image the result image
      * @param output the contents of "output"
      * @param highlighter the extracted highlighter information
      */
-    public DivaServicesResponse(BufferedImage image, Map<String, Object> output, IHighlighter highlighter){
+    public DivaServicesResponse(BufferedImage image, Map<String, Object> output, AbstractHighlighter<H> highlighter){
         this.image = image;
         this.output = output;
         this.highlighter = highlighter;
@@ -50,7 +49,7 @@ public class DivaServicesResponse {
         return output;
     }
 
-    public IHighlighter getHighlighter(){
+    public AbstractHighlighter<H> getHighlighter(){
         return highlighter;
     }
 }

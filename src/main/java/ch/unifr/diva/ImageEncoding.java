@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -51,6 +52,7 @@ public class ImageEncoding {
         }
         return "";
     }
+
     public static BufferedImage decodeBas64(String base64) {
         BASE64Decoder bd = new BASE64Decoder();
         try {
@@ -61,6 +63,17 @@ public class ImageEncoding {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static BufferedImage getImageFromUrl(String url){
+        BufferedImage image = null;
+        try{
+            URL uri = new URL(url);
+            image = ImageIO.read(uri);
+        }catch (IOException ex){
+
+        }
+        return image;
     }
 
     private static String hexString(byte[] bytes) {

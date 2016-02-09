@@ -9,15 +9,10 @@ import java.util.List;
  *         http://diuf.unifr.ch/main/diva/home/people/marcel-w%C3%BCrsch
  *         Created on: 08.10.2015.
  */
-public class RectangleHighlighter implements IHighlighter {
-    private List<Rectangle> rectangles;
+public class RectangleHighlighter extends AbstractHighlighter<Rectangle>{
 
-    public RectangleHighlighter(List<Rectangle> rectangles){
-        this.rectangles = rectangles;
+    public RectangleHighlighter(List<Rectangle> data){
+        super(data);
     }
 
-    @Override
-    public List getData() {
-        return rectangles;
-    }
 }

@@ -9,15 +9,10 @@ import java.util.List;
  *         http://diuf.unifr.ch/main/diva/home/people/marcel-w%C3%BCrsch
  *         Created on: 08.10.2015.
  */
-public class PolygonHighlighter implements IHighlighter {
-    private List<Polygon> polygons;
+public class PolygonHighlighter extends AbstractHighlighter<Polygon> {
 
-    public PolygonHighlighter(List<Polygon> polygons){
-        this.polygons = polygons;
+    public PolygonHighlighter(List<Polygon> data){
+        super(data);
     }
 
-    @Override
-    public List getData() {
-        return polygons;
-    }
 }

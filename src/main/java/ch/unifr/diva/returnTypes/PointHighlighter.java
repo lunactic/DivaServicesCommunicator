@@ -9,15 +9,11 @@ import java.util.List;
  *         http://diuf.unifr.ch/main/diva/home/people/marcel-w%C3%BCrsch
  *         Created on: 08.10.2015.
  */
-public class PointHighlighter implements IHighlighter {
-    private List<Point> points;
+public class PointHighlighter extends AbstractHighlighter<Point> {
 
-    public PointHighlighter(List<Point> points) {
-        this.points = points;
+
+    public PointHighlighter(List<Point> data) {
+        super(data);
     }
 
-    @Override
-    public List getData() {
-        return points;
-    }
 }
