@@ -5,7 +5,6 @@ import ch.unifr.diva.returnTypes.PointHighlighter;
 import ch.unifr.diva.returnTypes.PolygonHighlighter;
 import ch.unifr.diva.returnTypes.RectangleHighlighter;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -161,6 +160,13 @@ public class DivaServicesCommunicator {
         return new DivaServicesResponse<>(outputImage,null,null);
     }
 
+    public DivaServicesResponse<Object> runImageInverting(BufferedImage image, boolean requireOutputImage){
+        JSONObject request = createImageOnlyRequest(image,requireOutputImage);
+        JSONObject result = HttpRequest.executePost(serverUrl + "/imageanalysis/binarization/invert", request);
+        String resImage = (String) result.get("image");
+        return new DivaServicesResponse<>(ImageEncoding.decodeBas64(resImage),null,null);
+    }
+
     /**
      * @param image
      * @param rectangle
@@ -303,7 +309,6 @@ public class DivaServicesCommunicator {
         request.put("inputs", inputs);
         request.put("requireOutputImage",requireOutputImage);
         addImageToRequest(image, request);
-
         return request;
     }
 
