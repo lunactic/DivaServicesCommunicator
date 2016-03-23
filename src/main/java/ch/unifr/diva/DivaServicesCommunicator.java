@@ -250,10 +250,14 @@ public class DivaServicesCommunicator {
         //extract output
         Map<String, Object> output = extractOutput(result.getJSONObject("output"));
         //extract image
-        String resImage = (String) result.get("image");
-        BufferedImage resultImage = ImageEncoding.decodeBas64(resImage);
+        if(requireOutputImage) {
+            String resImage = (String) result.get("image");
+            BufferedImage resultImage = ImageEncoding.decodeBas64(resImage);
+            return new DivaServicesResponse(resultImage, output, null);
+        }else{
+            return new DivaServicesResponse(null, output, null);
+        }
 
-        return new DivaServicesResponse(resultImage, output, null);
     }
 
     /**
