@@ -39,7 +39,7 @@ public class DivaServicesCommunicatorTest{
     public void testSeamCarving() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         Rectangle rect = new Rectangle(141, 331, 1208, 404);
-        DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(image,rect,true);
+        DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(image,rect,0.0003f,3.0f,4,true);
         System.out.println("nr of polygons:" + response.getHighlighter().getData().size());
     }
 

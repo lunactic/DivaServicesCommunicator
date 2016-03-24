@@ -161,7 +161,7 @@ public class DivaServicesCommunicator {
      * @param rectangle
      * @return
      */
-    public DivaServicesResponse runSeamCarvingTextlineExtraction(BufferedImage image, Rectangle rectangle, boolean requireOutputImage) {
+    public DivaServicesResponse runSeamCarvingTextlineExtraction(BufferedImage image, Rectangle rectangle,float smooth, float sigma, int slices,  boolean requireOutputImage) {
         Map<String, Object> highlighter = new HashMap();
         highlighter.put("segments", prepareRectangle(rectangle));
         highlighter.put("closed", true);
@@ -170,6 +170,9 @@ public class DivaServicesCommunicator {
         JSONObject request = new JSONObject();
         JSONObject high = new JSONObject(highlighter);
         JSONObject inputs = new JSONObject();
+        inputs.put("smooth", smooth);
+        inputs.put("slices", slices);
+        inputs.put("sigma", sigma);
         request.put("highlighter", high);
         request.put("inputs", inputs);
         request.put("requireOutputImage",requireOutputImage);
