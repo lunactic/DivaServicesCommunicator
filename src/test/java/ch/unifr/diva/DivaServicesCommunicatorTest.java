@@ -1,9 +1,7 @@
 package ch.unifr.diva;
 
+import ch.unifr.diva.request.DivaServicesRequest;
 import ch.unifr.diva.returnTypes.DivaServicesResponse;
-import ch.unifr.diva.returnTypes.PolygonHighlighter;
-import com.google.gson.internal.LinkedTreeMap;
-import org.apache.commons.io.FilenameUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,28 +10,27 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Map;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
  * Unit test for simple DivaServicesCommunicator.
  */
-public class DivaServicesCommunicatorTest{
+public class DivaServicesCommunicatorTest {
     private static DivaServicesCommunicator divaServicesCommunicator;
 
     @BeforeClass
-    public static void beforeClass(){
+    public static void beforeClass() {
         divaServicesCommunicator = new DivaServicesCommunicator("http://192.168.56.101:8080");
         //divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch");
     }
 
     @Before
-    public void beforeTest(){
+    public void beforeTest() {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -46,15 +43,20 @@ public class DivaServicesCommunicatorTest{
     public void testSeamCarving() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         Rectangle rect = new Rectangle(141, 331, 1208, 404);
-        DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(image,rect, 0.0003f,3.0f, 4,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(request, rect, 0.0003f, 3.0f, 4, true);
         System.out.println("nr of polygons:" + response.getHighlighter().getData().size());
     }
 
     @Test
     public void testSauvolaBinarization() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        //BufferedImage resImage = divaServicesCommunicator.runSauvolaBinarization(image);
-        DivaServicesResponse response = divaServicesCommunicator.runSauvolaBinarization(image,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runSauvolaBinarization(request, true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
 
@@ -62,8 +64,11 @@ public class DivaServicesCommunicatorTest{
     public void testHistogramTextLineExtraction() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         Rectangle rect = new Rectangle(141, 331, 1208, 404);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
         //java.util.List<Rectangle> response = divaServicesCommunicator.runHistogramTextLineExtraction(image, rect);
-        DivaServicesResponse response = divaServicesCommunicator.runHistogramTextLineExtraction(image,rect);
+        DivaServicesResponse response = divaServicesCommunicator.runHistogramTextLineExtraction(request, rect);
         System.out.println("nr of rectangles:" + response.getHighlighter().getData().size());
     }
 
@@ -71,15 +76,20 @@ public class DivaServicesCommunicatorTest{
     public void testMultiScaleInterestPointDetection() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         //java.util.List<Point> interestPoints = divaServicesCommunicator.runMultiScaleInterestPointDetection(image, "Harris", 1.0f, 5, 3, 0.000001f, 2);
-        DivaServicesResponse response = divaServicesCommunicator.runMultiScaleInterestPointDetection(image, "Harris", 1.0f, 5, 3, 0.000001f, 2);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runMultiScaleInterestPointDetection(request, "Harris", 1.0f, 5, 3, 0.000001f, 2);
         System.out.println("nr of points: " + response.getHighlighter().getData().size());
     }
 
     @Test
     public void testOtsuBinarization() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        //BufferedImage resImage = divaServicesCommunicator.runOtsuBinarization(image);
-        DivaServicesResponse response = divaServicesCommunicator.runOtsuBinarization(image,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runOtsuBinarization(request, true);
         ImageIO.write(response.getImage(), "png", new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008-out.png"));
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
@@ -87,93 +97,98 @@ public class DivaServicesCommunicatorTest{
     @Test
     public void testUploadImage() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
         String sourceMd5 = ImageEncoding.encodeToMd5(image);
-        String targetMd5 = divaServicesCommunicator.uploadImage(image);
+        String targetMd5 = divaServicesCommunicator.uploadImage(request);
         assertEquals(sourceMd5, targetMd5);
     }
 
     @Test
-    public void testOcropyPageSegmentation() throws IOException{
+    public void testUploadZip() throws IOException {
+        divaServicesCommunicator.uploadZip("C:\\Users\\WuerschM\\Downloads\\Gmail.zip");
+    }
+
+    @Test
+    public void testOcropyPageSegmentation() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\binary.png"));
-        DivaServicesResponse response = divaServicesCommunicator.runOcropyPageSegmentation(image,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runOcropyPageSegmentation(request, true);
         System.out.println("number of segmented text lines: " + response.getOutput().size());
     }
 
     @Test
-    public void testCannyEdgeDetection() throws IOException{
+    public void testCannyEdgeDetection() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runCannyEdgeDetection(image,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runCannyEdgeDetection(request, true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
 
     @Test
-    public void testHistogramEnhancement() throws IOException{
+    public void testHistogramEnhancement() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runHistogramEnhancement(image,true);
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
-    }
-    @Test
-    public void testLaplacianSharpening() throws IOException{
-        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runLaplacianSharpening(image,4,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runHistogramEnhancement(request, true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
 
     @Test
-    public void testOcropyBinarization() throws IOException{
+    public void testLaplacianSharpening() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        DivaServicesResponse response = divaServicesCommunicator.runOcropyBinarization(image,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runLaplacianSharpening(request, 4, true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
 
     @Test
-    public void testTranscriptionWorkflow() throws IOException{
+    public void testOcropyBinarization() throws IOException {
+        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(image);
+        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesResponse response = divaServicesCommunicator.runOcropyBinarization(request, true);
+        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+    }
+
+    @Test
+    public void testTranscriptionWorkflow() throws IOException {
         BufferedImage inputImage = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Whiting_diary001.jpg"));
         //Binarize the image
-        DivaServicesResponse binarizationResult = divaServicesCommunicator.runOtsuBinarization(inputImage,true);
+        List<BufferedImage> images = new LinkedList<>();
+        images.add(inputImage);
+        DivaServicesRequest binarizationRequest = new DivaServicesRequest(images);
+        DivaServicesResponse binarizationResult = divaServicesCommunicator.runOcropyBinarization(binarizationRequest, true);
         //Run ocropy page segmentation
-        DivaServicesResponse pageSegResult = divaServicesCommunicator.runOcropyPageSegmentation(binarizationResult.getImage(),true);
+        List<BufferedImage> binarizedImages = new LinkedList<>();
+        binarizedImages.add(binarizationResult.getImage());
+        DivaServicesRequest pageSegRequest = new DivaServicesRequest(images);
+        DivaServicesResponse pageSegResult = divaServicesCommunicator.runOcropyPageSegmentation(pageSegRequest, true);
         //run text extraction for one textline
-        Map<String,Object> map = pageSegResult.getOutput();
-        for(String textline : map.keySet()){
-            String md5 = (String)((LinkedTreeMap)pageSegResult.getOutput().get(textline)).get("md5");
-            String url = (String)((LinkedTreeMap)pageSegResult.getOutput().get(textline)).get("url");
-
-            DivaServicesResponse textExtraction = divaServicesCommunicator.runOcropyTextExtraction(md5,url);
-            System.out.println("transcription of " + textline + ": " + textExtraction.getOutput().get("recognition"));
+        List<Map> output = pageSegResult.getOutput();
+        int i = 0;
+        List<BufferedImage> textLines = new LinkedList<>();
+        for (Map entry : output) {
+            String md5 = (String) entry.get("md5");
+            String url = (String) entry.get("url");
+            textLines.add(divaServicesCommunicator.downloadImage(url));
+        }
+        DivaServicesRequest transcriptionRequest = new DivaServicesRequest(textLines);
+        DivaServicesResponse response = divaServicesCommunicator.runOcropyTextExtraction(transcriptionRequest);
+        List<Map> transcriptionOutput = response.getOutput();
+        for(Map map : transcriptionOutput){
+            String transcription = (String)map.get("recognition");
+            System.out.println(transcription);
         }
 
-    }
-
-    //@Test
-    public void multipleSeamCarving() throws IOException{
-        File folder = new File("D:\\testData\\forAngie\\input");
-        for(final File file : folder.listFiles()){
-                BufferedImage image = ImageIO.read(file);
-                Rectangle rect = new Rectangle(0, 0, image.getWidth()-1, image.getHeight()-1);
-                DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(image, rect, 0.0003f, 3.0f, 4, true);
-                PolygonHighlighter highlighter = ((PolygonHighlighter) response.getHighlighter());
-                List<Polygon> polygonList = (List<Polygon>) highlighter.getData();
-                String filename = FilenameUtils.removeExtension(file.getName());
-                ObjectOutputStream objectOutputStream =
-                        new ObjectOutputStream(new FileOutputStream("D:\\testData\\forAngie\\output\\" + filename + ".obj"));
-                objectOutputStream.writeObject(polygonList);
-                objectOutputStream.close();
-                System.out.println("finished file: " + filename);
-        }
-    }
-
-    //@Test
-    public void multipleOcropyPageSeg() throws IOException{
-        File folder = new File("D:\\testData\\forAngie\\input");
-        for(final File file : folder.listFiles()){
-                BufferedImage image = ImageIO.read(file);
-                DivaServicesResponse invertingResponse = divaServicesCommunicator.runImageInverting(image, true);
-                DivaServicesResponse response = divaServicesCommunicator.runOcropyPageSegmentation(invertingResponse.getImage(), true);
-                BufferedImage outputImage = response.getImage();
-                String filename = FilenameUtils.removeExtension(file.getName());
-                ImageIO.write(outputImage, "png", new File("D:\\testData\\forAngie\\output\\" + filename + "_ocropus.png"));
-                System.out.println("finished file: " + filename);
-        }
     }
 }

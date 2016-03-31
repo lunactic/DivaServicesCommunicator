@@ -1,6 +1,7 @@
 package ch.unifr.diva.returnTypes;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 
 import static javafx.scene.input.KeyCode.H;
@@ -24,7 +25,7 @@ public class DivaServicesResponse<H> {
     /**
      * extracted outputs
      */
-    private Map<String, Object> output;
+    private List<Map> output;
     /**
      * extracted highlighters
      */
@@ -35,7 +36,7 @@ public class DivaServicesResponse<H> {
      * @param output the contents of "output"
      * @param highlighter the extracted highlighter information
      */
-    public DivaServicesResponse(BufferedImage image, Map<String, Object> output, AbstractHighlighter<H> highlighter){
+    public DivaServicesResponse(BufferedImage image, List<Map> output, AbstractHighlighter<H> highlighter){
         this.image = image;
         this.output = output;
         this.highlighter = highlighter;
@@ -45,7 +46,7 @@ public class DivaServicesResponse<H> {
         return image;
     }
 
-    public Map<String,Object> getOutput(){
+    public List<Map> getOutput(){
         return output;
     }
 
