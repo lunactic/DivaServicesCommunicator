@@ -6,6 +6,7 @@ import ch.unifr.diva.returnTypes.PointHighlighter;
 import ch.unifr.diva.returnTypes.PolygonHighlighter;
 import ch.unifr.diva.returnTypes.RectangleHighlighter;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -63,7 +64,7 @@ public class DivaServicesCommunicator {
         }
     }
 
-    public boolean uploadZip(String path) {
+    public String uploadZip(String path) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         File file = new File(path);
         try {
@@ -83,12 +84,11 @@ public class DivaServicesCommunicator {
             request.put("inputs", inputs);
             request.put("zip", base64);
             JSONObject result = HttpRequest.executePost(serverUrl + "/upload", request);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            return result.getString("collection");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        return true;
+        return null;
     }
 
 
@@ -195,6 +195,21 @@ public class DivaServicesCommunicator {
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
         return new DivaServicesResponse<>(outputImage, null, null);
+    }
+
+    public DivaServicesResponse<Object> trainOcrLanguageModel(DivaServicesRequest request, String modelName, int trainingIterations, int saveIteration, boolean requireOutputImage){
+        JSONObject inputs = new JSONObject();
+        inputs.put("modelName",modelName);
+        inputs.put("trainingIterations", trainingIterations);
+        inputs.put("saveIteration", saveIteration);
+        JSONObject jsonRequest = new JSONObject();
+        addDataToRequest(request.getData(), jsonRequest);
+        jsonRequest.put("inputs",inputs);
+        JSONObject postResult = HttpRequest.executePost(serverUrl + "/ocropy/train",jsonRequest);
+        JSONObject result = HttpRequest.getResult(postResult, 0);
+
+        return new DivaServicesResponse<>(null, extractOutput(result.getJSONArray("output")), null);
+
     }
 
     public DivaServicesResponse<Object> runImageInverting(DivaServicesRequest request, boolean requireOutputImage) {
@@ -559,6 +574,21 @@ public class DivaServicesCommunicator {
         JSONObject collectionObj = new JSONObject();
         collectionObj.put("type", "collection");
         collectionObj.put("value", collection);
+        JSONArray images = new JSONArray();
+        JSONObject jsonCollection = new JSONObject();
+        for(String key : collectionObj.keySet()){
+            jsonCollection.put(key, collectionObj.getString(key));
+        }
+        images.put(jsonCollection);
+        jsonRequest.put("images",images);
+    }
+
+    private void addDataToRequest(Map<String, String> data, JSONObject request){
+        JSONObject dataObj = new JSONObject();
+        for(String key : data.keySet()){
+            dataObj.put(key, data.get(key));
+        }
+        request.put("data",dataObj);
     }
 
     private void logJsonObject(JSONObject object) {

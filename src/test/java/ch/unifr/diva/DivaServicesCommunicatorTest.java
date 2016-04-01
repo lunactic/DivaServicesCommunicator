@@ -105,10 +105,6 @@ public class DivaServicesCommunicatorTest {
         assertEquals(sourceMd5, targetMd5);
     }
 
-    @Test
-    public void testUploadZip() throws IOException {
-        divaServicesCommunicator.uploadZip("C:\\Users\\WuerschM\\Downloads\\Gmail.zip");
-    }
 
     @Test
     public void testOcropyPageSegmentation() throws IOException {
@@ -190,5 +186,21 @@ public class DivaServicesCommunicatorTest {
             System.out.println(transcription);
         }
 
+    }
+
+    @Test
+    public void testUploadZipAndCollectionComputation() throws IOException{
+        String collection = divaServicesCommunicator.uploadZip("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Gmail.zip");
+        DivaServicesRequest request = new DivaServicesRequest(collection);
+        DivaServicesResponse response = divaServicesCommunicator.runSauvolaBinarization(request,true);
+
+    }
+
+    @Test
+    public void testLanguageModelTraining() throws IOException{
+        DivaServicesRequest request = new DivaServicesRequest();
+        request.addDataValue("url","http://192.168.56.101:8080/static/training.zip");
+        DivaServicesResponse response = divaServicesCommunicator.trainOcrLanguageModel(request,"greek",500,100,false);
+        System.out.println("finished");
     }
 }
