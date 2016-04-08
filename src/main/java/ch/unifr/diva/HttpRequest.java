@@ -26,7 +26,7 @@ public class HttpRequest {
     /**
      * Executes a post request and returns the body json object
      *
-     * @param url URL for the HTTP Request
+     * @param url     URL for the HTTP Request
      * @param payload the JSON payload to send
      * @return the extracted JSON response
      */
@@ -50,10 +50,11 @@ public class HttpRequest {
 
     /**
      * executes a GET request
+     *
      * @param url The url of for the request
      * @return the extracted JSON Object of the response
      */
-    public static JSONObject executeGet(String url){
+    public static JSONObject executeGet(String url) {
         HttpClient client = new DefaultHttpClient();
         HttpGet get = new HttpGet(url);
         try {
@@ -74,20 +75,20 @@ public class HttpRequest {
      * Gets a result JSON object from the exeuction response
      * This method will run GET requests in a 5 second interval until the result is available
      *
-     *
-     * @param result The JSON object return from the POST request
-     * @param index the result file to retrieve
+     * @param result        The JSON object return from the POST request
+     * @param checkInterval How often to check for new results (in seconds)
+     * @param index         the result file to retrieve
      * @return The result JSON object
      */
-    public static JSONObject getResult(JSONObject result, int index){
+    public static JSONObject getResult(JSONObject result, int checkInterval, int index) {
         JSONArray results = result.getJSONArray("results");
         String url = results.getJSONObject(index).getString("resultLink");
         JSONObject getResult = executeGet(url);
-        while(!getResult.getString("status").equals("done")){
+        while (!getResult.getString("status").equals("done")) {
             //Result not available yet
             try {
                 //Wait 5 seconds and try again
-                Thread.sleep(5000);
+                Thread.sleep(checkInterval * 1000);
                 getResult = executeGet(url);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -122,7 +123,7 @@ public class HttpRequest {
         return sb.toString();
     }
 
-    private static JSONObject parseEntity(HttpEntity entity) throws IOException{
+    private static JSONObject parseEntity(HttpEntity entity) throws IOException {
         InputStream instream = entity.getContent();
         JSONObject result = new JSONObject(convertStreamToString(instream));
         instream.close();

@@ -25,7 +25,7 @@ public class DivaServicesCommunicatorTest {
 
     @BeforeClass
     public static void beforeClass() {
-        divaServicesCommunicator = new DivaServicesCommunicator("http://192.168.56.101:8080");
+        divaServicesCommunicator = new DivaServicesCommunicator("http://192.168.56.101:8080",5);
         //divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch");
     }
 
@@ -193,14 +193,20 @@ public class DivaServicesCommunicatorTest {
         String collection = divaServicesCommunicator.uploadZip("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Gmail.zip");
         DivaServicesRequest request = new DivaServicesRequest(collection);
         DivaServicesResponse response = divaServicesCommunicator.runSauvolaBinarization(request,true);
-
     }
 
     @Test
     public void testLanguageModelTraining() throws IOException{
         DivaServicesRequest request = new DivaServicesRequest();
         request.addDataValue("url","http://192.168.56.101:8080/static/training.zip");
-        DivaServicesResponse response = divaServicesCommunicator.trainOcrLanguageModel(request,"greek",500,100,false);
-        System.out.println("finished");
+        DivaServicesResponse response = divaServicesCommunicator.trainOcrLanguageModel(request,"greek",1000,100,false);
+        List<Map> outputs = response.getOutput();
+        for(Map value : outputs){
+            if(value.get("type").equals("model")){
+                System.out.println("Computed a model with a minimal Error of: " + value.get("minmalError"));
+                System.out.println("Model can be downloaded at: " + value.get("bestModel"));
+                System.out.println("Training data used can be downloaded at: " + value.get("trainingData"));
+            }
+        }
     }
 }

@@ -6,7 +6,6 @@ import ch.unifr.diva.returnTypes.PointHighlighter;
 import ch.unifr.diva.returnTypes.PolygonHighlighter;
 import ch.unifr.diva.returnTypes.RectangleHighlighter;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,7 +13,10 @@ import org.json.JSONObject;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -24,15 +26,18 @@ import java.util.List;
 
 @SuppressWarnings({"unchecked", "WeakerAccess", "JavaDoc"})
 public class DivaServicesCommunicator {
+    private int checkInterval;
     private String serverUrl;
 
     /**
      * Initialize a new DivaServicesCommunicator class
      *
-     * @param serverUrl base url to use (e.g. http://divaservices.unifr.ch)
+     * @param serverUrl     base url to use (e.g. http://divaservices.unifr.ch)
+     * @param checkInterval How often to check for computed results on the server
      */
-    public DivaServicesCommunicator(String serverUrl) {
+    public DivaServicesCommunicator(String serverUrl, int checkInterval) {
         this.serverUrl = serverUrl;
+        this.checkInterval = checkInterval;
     }
 
     /**
@@ -104,7 +109,7 @@ public class DivaServicesCommunicator {
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/ocropy/recognize", jsonRequest);
         List<Map> outputs = new LinkedList<>();
         for (int i = 0; i < postResult.getJSONArray("results").length(); i++) {
-            JSONObject result = HttpRequest.getResult(postResult, i);
+            JSONObject result = HttpRequest.getResult(postResult,checkInterval, i);
             List<Map> output = extractOutput(result.getJSONArray("output"));
             outputs.add(output.get(0));
         }
@@ -143,7 +148,7 @@ public class DivaServicesCommunicator {
         processDivaRequest(request, jsonRequest);
         //System.out.println(request.toString());
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/ipd/multiscale", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         return new DivaServicesResponse<>(null, null, extractPoints(result));
     }
 
@@ -154,7 +159,7 @@ public class DivaServicesCommunicator {
     public DivaServicesResponse<Object> runOtsuBinarization(DivaServicesRequest request, boolean requireOutputImage) {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/imageanalysis/binarization/otsu", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult, checkInterval, 0);
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
         return new DivaServicesResponse<>(outputImage, null, null);
@@ -180,7 +185,7 @@ public class DivaServicesCommunicator {
         processDivaRequest(request, jsonRequest);
 
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/segmentation/textline/hist", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         return new DivaServicesResponse<>(null, null, extractRectangles(result));
     }
 
@@ -191,22 +196,22 @@ public class DivaServicesCommunicator {
     public DivaServicesResponse<Object> runSauvolaBinarization(DivaServicesRequest request, boolean requireOutputImage) {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/imageanalysis/binarization/sauvola", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult, checkInterval,0);
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
         return new DivaServicesResponse<>(outputImage, null, null);
     }
 
-    public DivaServicesResponse<Object> trainOcrLanguageModel(DivaServicesRequest request, String modelName, int trainingIterations, int saveIteration, boolean requireOutputImage){
+    public DivaServicesResponse<Object> trainOcrLanguageModel(DivaServicesRequest request, String modelName, int trainingIterations, int saveIteration, boolean requireOutputImage) {
         JSONObject inputs = new JSONObject();
-        inputs.put("modelName",modelName);
+        inputs.put("modelName", modelName);
         inputs.put("trainingIterations", trainingIterations);
         inputs.put("saveIteration", saveIteration);
         JSONObject jsonRequest = new JSONObject();
         addDataToRequest(request.getData(), jsonRequest);
-        jsonRequest.put("inputs",inputs);
-        JSONObject postResult = HttpRequest.executePost(serverUrl + "/ocropy/train",jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        jsonRequest.put("inputs", inputs);
+        JSONObject postResult = HttpRequest.executePost(serverUrl + "/ocropy/train", jsonRequest);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
 
         return new DivaServicesResponse<>(null, extractOutput(result.getJSONArray("output")), null);
 
@@ -241,7 +246,7 @@ public class DivaServicesCommunicator {
         jsonRequest.put("requireOutputImage", requireOutputImage);
         processDivaRequest(request, jsonRequest);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/segmentation/textline/seam", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         PolygonHighlighter polygons = extractPolygons(result);
         return new DivaServicesResponse<>(null, null, polygons);
     }
@@ -255,7 +260,7 @@ public class DivaServicesCommunicator {
     public DivaServicesResponse<Object> runCannyEdgeDetection(DivaServicesRequest request, boolean requireOutputImage) {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/imageanalysis/edge/canny", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
         return new DivaServicesResponse<>(outputImage, null, null);
@@ -270,7 +275,7 @@ public class DivaServicesCommunicator {
     public DivaServicesResponse<Object> runHistogramEnhancement(DivaServicesRequest request, boolean requireOutputImage) {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/imageanalysis/enhancement/histogram", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult, checkInterval, 0);
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
         return new DivaServicesResponse<>(outputImage, null, null);
@@ -293,7 +298,7 @@ public class DivaServicesCommunicator {
         jsonRequest.put("requireOutputImage", requireOutputImage);
         processDivaRequest(request, jsonRequest);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/imageanalysis/enhancement/sharpen", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
         return new DivaServicesResponse<>(outputImage, null, null);
@@ -308,7 +313,7 @@ public class DivaServicesCommunicator {
     public DivaServicesResponse<Object> runOcropyBinarization(DivaServicesRequest request, boolean requireOutputImage) {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/ocropy/binarization", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
         return new DivaServicesResponse<>(outputImage, null, null);
@@ -322,7 +327,7 @@ public class DivaServicesCommunicator {
     public DivaServicesResponse<Object> runOcropyPageSegmentation(DivaServicesRequest request, boolean requireOutputImage) {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
         JSONObject postResult = HttpRequest.executePost(serverUrl + "/ocropy/pageseg", jsonRequest);
-        JSONObject result = HttpRequest.getResult(postResult, 0);
+        JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         //extract output
         List<Map> output = extractOutput(result.getJSONArray("output"));
         //extract image
@@ -369,7 +374,7 @@ public class DivaServicesCommunicator {
     private void processDivaRequest(DivaServicesRequest request, JSONObject jsonRequest) {
         if (request.getImages().isPresent()) {
             addImagesToRequest(request.getImages().get(), jsonRequest);
-        } else if(request.getCollection().isPresent()){
+        } else if (request.getCollection().isPresent()) {
             addCollectionToRequest(request.getCollection().get(), jsonRequest);
         }
     }
@@ -576,19 +581,19 @@ public class DivaServicesCommunicator {
         collectionObj.put("value", collection);
         JSONArray images = new JSONArray();
         JSONObject jsonCollection = new JSONObject();
-        for(String key : collectionObj.keySet()){
+        for (String key : collectionObj.keySet()) {
             jsonCollection.put(key, collectionObj.getString(key));
         }
         images.put(jsonCollection);
-        jsonRequest.put("images",images);
+        jsonRequest.put("images", images);
     }
 
-    private void addDataToRequest(Map<String, String> data, JSONObject request){
+    private void addDataToRequest(Map<String, String> data, JSONObject request) {
         JSONObject dataObj = new JSONObject();
-        for(String key : data.keySet()){
+        for (String key : data.keySet()) {
             dataObj.put(key, data.get(key));
         }
-        request.put("data",dataObj);
+        request.put("data", dataObj);
     }
 
     private void logJsonObject(JSONObject object) {
