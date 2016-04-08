@@ -52,6 +52,14 @@ public class DivaServicesCommunicatorTest{
     }
 
     @Test
+    public void testGraphExtraction() throws IOException{
+        BufferedImage image = ImageIO.read(new File("D:\\data\\images\\176ddc62c420952e3e082b2134e75f5c\\crop_cpg330_0025_double.jpg"));
+        DivaServicesResponse response = divaServicesCommunicator.runGraphExtraction(image, "Harris", true);
+        System.out.println(response.getOutput().get("url"));
+    }
+
+
+    @Test
     public void testHistogramTextLineExtraction() throws IOException {
         BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         Rectangle rect = new Rectangle(141, 331, 1208, 404);

@@ -195,6 +195,21 @@ public class DivaServicesCommunicator {
         return new DivaServicesResponse(ImageEncoding.decodeBas64(resImage),null,null);
     }
 
+    public DivaServicesResponse runGraphExtraction(BufferedImage image, String ipd, boolean requireOutputImage){
+
+        JSONObject request = new JSONObject();
+        JSONObject high = new JSONObject();
+        JSONObject inputs = new JSONObject();
+        inputs.put("InterestPointDetector", ipd);
+        request.put("highlighter", high);
+        request.put("inputs", inputs);
+        request.put("requireOutputImage",requireOutputImage);
+        addImageToRequest(image, request);
+        JSONObject result = HttpRequest.executePost(serverUrl + "/graph/graphextraction", request);
+        String resImage = (String) result.get("image");
+        return new DivaServicesResponse(ImageEncoding.decodeBas64(resImage), extractOutput(result.getJSONObject("output")), null);
+    }
+
     /**
      * run simple histogram enhancement
      *
