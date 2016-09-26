@@ -126,6 +126,13 @@ public class DivaServicesCommunicatorTest{
         DivaServicesResponse response = divaServicesCommunicator.runOcropyBinarization(image,true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }
+    @Test
+    public void testDecolorizing() throws IOException{
+        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
+        DivaServicesResponse response = divaServicesCommunicator.runDecolorization(image,0.5f,0.001f,true);
+        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+
+    }
 
     @Test
     public void testTranscriptionWorkflow() throws IOException{
