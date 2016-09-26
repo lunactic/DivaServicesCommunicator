@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +23,15 @@ import static junit.framework.Assert.assertEquals;
  */
 public class DivaServicesCommunicatorTest {
     private static DivaServicesCommunicator divaServicesCommunicator;
-
+    private static String testCollection;
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws IOException {
         divaServicesCommunicator = new DivaServicesCommunicator("http://192.168.56.101:8080",5);
         //divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch");
+        List<BufferedImage> images = new ArrayList<>();
+        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
+        images.add(image);
+        testCollection = divaServicesCommunicator.createCollection(images);
     }
 
     @Before
@@ -41,11 +46,8 @@ public class DivaServicesCommunicatorTest {
 
     @Test
     public void testSeamCarving() throws IOException {
-        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
         Rectangle rect = new Rectangle(141, 331, 1208, 404);
-        List<BufferedImage> images = new LinkedList<>();
-        images.add(image);
-        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesRequest request = new DivaServicesRequest(testCollection);
         DivaServicesResponse response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(request, rect, 0.0003f, 3.0f, 4, true);
         System.out.println("nr of polygons:" + response.getHighlighter().getData().size());
     }
@@ -118,10 +120,7 @@ public class DivaServicesCommunicatorTest {
 
     @Test
     public void testCannyEdgeDetection() throws IOException {
-        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
-        List<BufferedImage> images = new LinkedList<>();
-        images.add(image);
-        DivaServicesRequest request = new DivaServicesRequest(images);
+        DivaServicesRequest request = new DivaServicesRequest(testCollection);
         DivaServicesResponse response = divaServicesCommunicator.runCannyEdgeDetection(request, true);
         System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
     }

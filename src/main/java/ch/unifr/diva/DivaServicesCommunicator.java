@@ -39,12 +39,11 @@ public class DivaServicesCommunicator {
         this.serverUrl = serverUrl;
         this.checkInterval = checkInterval;
     }
-
     /**
      * uploads an image to the server
      *
      * @param request the request containing image/collection information
-     * @return the md5Hash to use in future requests
+     * @return the name of the newly created collection
      */
     public String uploadImage(DivaServicesRequest request) {
         if (request.getImages().isPresent()) {
@@ -52,7 +51,6 @@ public class DivaServicesCommunicator {
             if (!checkImageOnServer(image)) {
                 String base64Image = ImageEncoding.encodeToBase64(image);
                 Map<String, Object> highlighter = new HashMap();
-
                 JSONObject jsonRequest = new JSONObject();
                 JSONObject high = new JSONObject(highlighter);
                 JSONObject inputs = new JSONObject();
@@ -221,7 +219,7 @@ public class DivaServicesCommunicator {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
         JSONObject result = HttpRequest.executePost(serverUrl + "/imageanalysis/binarization/invert", jsonRequest);
         String resImage = (String) (result != null ? result.get("image") : null);
-        return new DivaServicesResponse<>(ImageEncoding.decodeBas64(resImage), null, null);
+        return new DivaServicesResponse<>(ImageEncoding.decodeBase64(resImage), null, null);
     }
 
     /**
@@ -259,7 +257,7 @@ public class DivaServicesCommunicator {
      */
     public DivaServicesResponse<Object> runCannyEdgeDetection(DivaServicesRequest request, boolean requireOutputImage) {
         JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
-        JSONObject postResult = HttpRequest.executePost(serverUrl + "/imageanalysis/edge/canny", jsonRequest);
+        JSONObject postResult = HttpRequest.executePost(serverUrl + "/imageanalysis/cannyedgedetection", jsonRequest);
         JSONObject result = HttpRequest.getResult(postResult,checkInterval, 0);
         String imageUrl = (String) result.get("outputImage");
         BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
@@ -346,6 +344,37 @@ public class DivaServicesCommunicator {
         return null;
     }
 
+    /**
+     * Create a new collection. This method will block until all the images are transferred and stored on the server.
+     * @param images
+     * @return The name of the created collection
+     */
+
+    public String createCollection(List<BufferedImage> images){
+        JSONObject request = new JSONObject();
+        JSONArray jsonImages = new JSONArray();
+        for (BufferedImage image : images){
+            JSONObject jsonImage = new JSONObject();
+            jsonImage.put("type","image");
+            jsonImage.put("value",ImageEncoding.encodeToBase64(image));
+            jsonImages.put(jsonImage);
+        }
+        request.put("images",jsonImages);
+        JSONObject response = HttpRequest.executePost(serverUrl + "/upload", request);
+        String collection = response.getString("collection");
+        String url = serverUrl + "/collections/" + collection;
+        JSONObject getResponse = HttpRequest.executeGet(url);
+        while(!(getResponse.getInt("percentage") == 100)){
+            try {
+                Thread.sleep(checkInterval * 1000);
+                getResponse = HttpRequest.executeGet(url);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return collection;
+    }
+
 
     /**
      * extracts variable output from the "output" field into a Map for easier processing
@@ -372,23 +401,10 @@ public class DivaServicesCommunicator {
     }
 
     private void processDivaRequest(DivaServicesRequest request, JSONObject jsonRequest) {
-        if (request.getImages().isPresent()) {
-            addImagesToRequest(request.getImages().get(), jsonRequest);
-        } else if (request.getCollection().isPresent()) {
+        if (request.getCollection().isPresent()) {
             addCollectionToRequest(request.getCollection().get(), jsonRequest);
         }
-    }
-
-    private JSONObject createImageOnlyRequest(BufferedImage image, boolean requireOutputImage) {
-        Map<String, Object> highlighter = new HashMap();
-        JSONObject request = new JSONObject();
-        JSONObject high = new JSONObject(highlighter);
-        JSONObject inputs = new JSONObject();
-        request.put("highlighter", high);
-        request.put("inputs", inputs);
-        request.put("requireOutputImage", requireOutputImage);
-        addImageToRequest(image, request);
-        return request;
+        //TODO: Add error handling
     }
 
     /**
@@ -524,55 +540,6 @@ public class DivaServicesCommunicator {
             result.put("value", ImageEncoding.encodeToMd5(image));
         }
         return result;
-    }
-
-    /**
-     * Adds an image to the JSON request
-     * It will check wheter the image is available on the server or not
-     *
-     * @param image   the input image
-     * @param request the request object where the image will be added
-     */
-    private void addImageToRequest(BufferedImage image, JSONObject request) {
-        JSONObject imageObj = checkImage(image);
-        JSONArray images = new JSONArray();
-        JSONObject jsonImage = new JSONObject();
-        for (String key : imageObj.keySet()) {
-            jsonImage.put(key, imageObj.getString(key));
-        }
-        images.put(jsonImage);
-        request.put("images", images);
-    }
-
-    private void addImagesToRequest(List<BufferedImage> images, JSONObject request) {
-        JSONArray imageArray = new JSONArray();
-        for (BufferedImage image : images) {
-            JSONObject imageObj = checkImage(image);
-            JSONObject jsonImage = new JSONObject();
-            for (String key : imageObj.keySet()) {
-                jsonImage.put(key, imageObj.getString(key));
-            }
-            imageArray.put(jsonImage);
-        }
-        request.put("images", imageArray);
-    }
-
-    private void addImageToRequest(String md5, String url, JSONObject request) {
-        JSONObject imageObj = new JSONObject();
-        if (!checkImageOnServer(md5)) {
-            imageObj.put("type", "url");
-            imageObj.put("value", url);
-        } else {
-            imageObj.put("type", "md5");
-            imageObj.put("value", md5);
-        }
-        JSONArray images = new JSONArray();
-        JSONObject jsonImage = new JSONObject();
-        for (String key : imageObj.keySet()) {
-            jsonImage.put(key, imageObj.getString(key));
-        }
-        images.put(jsonImage);
-        request.put("images", images);
     }
 
     private void addCollectionToRequest(String collection, JSONObject jsonRequest) {

@@ -53,7 +53,7 @@ public class ImageEncoding {
         return "";
     }
 
-    public static BufferedImage decodeBas64(String base64) {
+    public static BufferedImage decodeBase64(String base64) {
         BASE64Decoder bd = new BASE64Decoder();
         try {
             byte[] buffer = bd.decodeBuffer(base64);
