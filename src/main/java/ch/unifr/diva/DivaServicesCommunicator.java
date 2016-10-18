@@ -256,6 +256,28 @@ public class DivaServicesCommunicator {
     }
 
     /**
+     * Run Sift Writer Identification feature extraction
+     * @param image input image
+     * @param requireOutputImage
+     * @return
+     */
+    public DivaServicesResponse runSiftWriterIdentification(BufferedImage image, boolean requireOutputImage){
+        JSONObject request = createImageOnlyRequest(image, requireOutputImage);
+        JSONObject result = HttpRequest.executePost(serverUrl + "/writeridentification/siftwriteridentification", request);
+        //extract output
+        Map<String, Object> output = extractOutput(result.getJSONObject("output"));
+        //extract image
+        if (requireOutputImage) {
+            String resImage = (String) result.get("image");
+            BufferedImage resultImage = ImageEncoding.decodeBas64(resImage);
+            return new DivaServicesResponse(resultImage, output, null);
+        } else {
+            return new DivaServicesResponse(null, output, null);
+        }
+    }
+
+
+    /**
      * run the page segmentation algorithm of ocropy (https://github.com/tmbdev/ocropy)
      *
      * @param image input image
