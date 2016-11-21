@@ -320,6 +320,38 @@ public class DivaServicesCommunicator {
         }
     }
 
+    public DivaServicesResponse<Object> runKrakenBinarization(DivaServicesRequest request, boolean requireOutputImage) throws MethodNotAvailableException{
+        JSONObject jsonRequest = createImagesOnlyRequest(request, requireOutputImage);
+        JSONObject postResult = HttpRequest.executePost(connection.getServerUrl() + properties.getProperty("krakenBinarization"), jsonRequest);
+        JSONObject result = HttpRequest.getResult(postResult, connection.getCheckInterval(), 0);
+        String imageUrl = extractVisualizationImage(result);
+        if (imageUrl != null) {
+            BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
+            return new DivaServicesResponse<>(outputImage, null, null);
+        } else {
+            return new DivaServicesResponse<>(null, null, null);
+        }
+    }
+
+    public DivaServicesResponse<Object> runDecolorization(DivaServicesRequest request, float effect, float noise, boolean requireOutputImage) throws MethodNotAvailableException{
+        JSONObject jsonRequest = new JSONObject();
+        JSONObject inputs = new JSONObject();
+        inputs.put("effect", effect);
+        inputs.put("noise", noise);
+        jsonRequest.put("inputs", inputs);
+        jsonRequest.put("requireOutputImage", requireOutputImage);
+        processDivaRequest(request, jsonRequest);
+        JSONObject postResult = HttpRequest.executePost(connection.getServerUrl() + properties.getProperty("decolorization"), jsonRequest);
+        JSONObject result = HttpRequest.getResult(postResult, connection.getCheckInterval(), 0);
+        String imageUrl = extractVisualizationImage(result);
+        if (imageUrl != null) {
+            BufferedImage outputImage = ImageEncoding.getImageFromUrl(imageUrl);
+            return new DivaServicesResponse<>(outputImage, null, null);
+        } else {
+            return new DivaServicesResponse<>(null, null, null);
+        }
+    }
+
     /**
      * run the page segmentation algorithm of ocropy (https://github.com/tmbdev/ocropy)
      *

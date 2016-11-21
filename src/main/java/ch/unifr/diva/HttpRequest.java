@@ -83,7 +83,7 @@ public class HttpRequest {
      * @return The result JSON object
      */
     public static JSONObject getResult(JSONObject result, int checkInterval, int index) throws MethodNotAvailableException {
-        if(result.has("status") && result.getInt("status") == 404){
+        if(result.has("statusCode") && result.getInt("statusCode") == 404){
             throw new MethodNotAvailableException("This method is currently not available");
         }
         JSONArray results = result.getJSONArray("results");
