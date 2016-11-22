@@ -18,10 +18,7 @@ import org.json.JSONObject;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -45,7 +42,10 @@ public class DivaServicesCommunicator {
         this.connection = connection;
         properties = new Properties();
         try {
-            properties.load(new FileInputStream("data/services.properties"));
+            String resourceName = "services.properties";
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            InputStream resourceStream = loader.getResourceAsStream(resourceName);
+            properties.load(resourceStream);;
         } catch (IOException e) {
             e.printStackTrace();
         }
