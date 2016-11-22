@@ -12,17 +12,33 @@ import java.util.Optional;
  */
 public class DivaServicesRequest {
     private Optional<DivaCollection> collection;
+    private Optional<DivaImage> image;
     private Map<String, String> data;
 
     public DivaServicesRequest() {
         data = new HashMap<>();
     }
 
+    /**
+     * Create a request using a collection
+     *
+     * @param collection the collection to use
+     */
     public DivaServicesRequest(DivaCollection collection) {
         this.collection = Optional.of(collection);
+        this.image = Optional.empty();
         data = new HashMap<>();
     }
 
+    public DivaServicesRequest(DivaImage image) {
+        this.collection = Optional.empty();
+        this.image = Optional.of(image);
+        data = new HashMap<>();
+    }
+
+    public Optional<DivaImage> getImage() {
+        return image;
+    }
 
     public Optional<DivaCollection> getCollection() {
         return collection;

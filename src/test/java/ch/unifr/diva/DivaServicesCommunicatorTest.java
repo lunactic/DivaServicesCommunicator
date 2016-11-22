@@ -3,6 +3,7 @@ package ch.unifr.diva;
 import ch.unifr.diva.exceptions.CollectionException;
 import ch.unifr.diva.exceptions.MethodNotAvailableException;
 import ch.unifr.diva.request.DivaCollection;
+import ch.unifr.diva.request.DivaImage;
 import ch.unifr.diva.request.DivaServicesRequest;
 import ch.unifr.diva.returnTypes.DivaServicesResponse;
 import org.junit.Before;
@@ -28,6 +29,7 @@ import static junit.framework.Assert.assertEquals;
 public class DivaServicesCommunicatorTest {
     private static DivaServicesCommunicator divaServicesCommunicator;
     private static DivaCollection testCollection;
+    private static DivaImage testImage;
     @BeforeClass
     public static void beforeClass() throws IOException, CollectionException {
 
@@ -38,6 +40,7 @@ public class DivaServicesCommunicatorTest {
         images.add(image);
         //testCollection = divaServicesCommunicator.createCollection(images);
         testCollection = divaServicesCommunicator.createCollection("dimyummywhelp");
+        testImage = new DivaImage(image);
     }
 
     @Before
@@ -178,7 +181,7 @@ public class DivaServicesCommunicatorTest {
 
     @Test
     public void testKrakenBinarization() throws IOException {
-        DivaServicesRequest request = new DivaServicesRequest(testCollection);
+        DivaServicesRequest request = new DivaServicesRequest(testImage);
         DivaServicesResponse response = null;
         try{
             response = divaServicesCommunicator.runKrakenBinarization(request, true);

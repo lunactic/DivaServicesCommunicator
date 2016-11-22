@@ -9,6 +9,7 @@ import ch.unifr.diva.returnTypes.PointHighlighter;
 import ch.unifr.diva.returnTypes.PolygonHighlighter;
 import ch.unifr.diva.returnTypes.RectangleHighlighter;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -425,6 +426,9 @@ public class DivaServicesCommunicator {
         if (request.getCollection().isPresent()) {
             addCollectionToRequest(request.getCollection().get().getName(), jsonRequest);
         }
+        if(request.getImage().isPresent()){
+            addImageToRequest(request.getImage().get().getMd5Hash(), jsonRequest);
+        }
         //TODO: Add error handling
     }
 
@@ -549,6 +553,19 @@ public class DivaServicesCommunicator {
         String url = connection.getServerUrl() + "/image/check/" + md5;
         JSONObject response = HttpRequest.executeGet(url);
         return response.getBoolean("imageAvailable");
+    }
+
+    private void addImageToRequest(String md5Hash, JSONObject jsonRequest) {
+        JSONObject imageObject = new JSONObject();
+        imageObject.put("type", "image");
+        imageObject.put("value", md5Hash);
+        JSONArray images = new JSONArray();
+        JSONObject jsonImage = new JSONObject();
+        for(String key : imageObject.keySet()){
+            jsonImage.put(key, imageObject.getString(key));
+        }
+        images.put(jsonImage);
+        jsonRequest.put("images",images);
     }
 
     private void addCollectionToRequest(String collection, JSONObject jsonRequest) {
