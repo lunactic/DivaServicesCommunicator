@@ -3,6 +3,7 @@ package ch.unifr.diva;
 import ch.unifr.diva.exceptions.CollectionException;
 import ch.unifr.diva.exceptions.MethodNotAvailableException;
 import ch.unifr.diva.request.DivaCollection;
+import ch.unifr.diva.request.DivaImage;
 import ch.unifr.diva.request.DivaServicesRequest;
 import ch.unifr.diva.returnTypes.DivaServicesResponse;
 import ch.unifr.diva.returnTypes.PointHighlighter;
@@ -395,6 +396,10 @@ public class DivaServicesCommunicator {
     public DivaCollection createCollection(String name) throws CollectionException {
         DivaCollection collection = DivaCollection.createCollectionByName(name, connection);
         return collection;
+    }
+
+    public DivaImage createImage(BufferedImage image){
+        return new DivaImage(image);
     }
 
 
