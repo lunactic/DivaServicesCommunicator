@@ -4,10 +4,6 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
 
-import static javafx.scene.input.KeyCode.H;
-import static javafx.scene.input.KeyCode.M;
-import static javafx.scene.input.KeyCode.T;
-
 /**
  * Class encapsulating an image and output information from DivaServices
  *
@@ -21,36 +17,36 @@ public class DivaServicesResponse<H> {
     /**
      * extracted image
      */
-    private BufferedImage image;
+    private List<BufferedImage> image;
     /**
      * extracted outputs
      */
-    private List<Map> output;
+    private List<List<Map>> outputs;
     /**
      * extracted highlighters
      */
-    private AbstractHighlighter<H> highlighter;
+    private List<AbstractHighlighter<H>> highlighters;
+
     /**
-     *
-     * @param image the result image
-     * @param output the contents of "output"
-     * @param highlighter the extracted highlighter information
+     * @param images        the result images
+     * @param outputs       the contents of "output" for each of the processed images
+     * @param highlighters  the extracted highlighter information for each of the processed images
      */
-    public DivaServicesResponse(BufferedImage image, List<Map> output, AbstractHighlighter<H> highlighter){
-        this.image = image;
-        this.output = output;
-        this.highlighter = highlighter;
+    public DivaServicesResponse(List<BufferedImage> images, List<List<Map>> outputs, List<AbstractHighlighter<H>> highlighters) {
+        this.image = images;
+        this.outputs = outputs;
+        this.highlighters = highlighters;
     }
 
-    public BufferedImage getImage(){
+    public List<BufferedImage> getImages() {
         return image;
     }
 
-    public List<Map> getOutput(){
-        return output;
+    public List<List<Map>> getOutputs() {
+        return outputs;
     }
 
-    public AbstractHighlighter<H> getHighlighter(){
-        return highlighter;
+    public List<AbstractHighlighter<H>> getHighlighters() {
+        return highlighters;
     }
 }

@@ -1,6 +1,7 @@
 package ch.unifr.diva;
 
 import ch.unifr.diva.exceptions.MethodNotAvailableException;
+import ch.unifr.diva.request.DivaServicesRequest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -15,7 +16,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Marcel Würsch
@@ -79,15 +81,41 @@ public class HttpRequest {
      *
      * @param result        The JSON object return from the POST request
      * @param checkInterval How often to check for new results (in seconds)
-     * @param index         the result file to retrieve
+     * @param request       The DivaServicesRequest
      * @return The result JSON object
      */
-    public static JSONObject getResult(JSONObject result, int checkInterval, int index) throws MethodNotAvailableException {
-        if(result.has("statusCode") && result.getInt("statusCode") == 404){
+    public static List<JSONObject> getResult(JSONObject result, int checkInterval, DivaServicesRequest request) throws MethodNotAvailableException {
+        if (result.has("statusCode") && result.getInt("statusCode") == 404) {
             throw new MethodNotAvailableException("This method is currently not available");
         }
         JSONArray results = result.getJSONArray("results");
-        String url = results.getJSONObject(index).getString("resultLink");
+        List<JSONObject> response = new LinkedList<>();
+        if (request.getCollection().isPresent()) {
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject res = results.getJSONObject(i);
+                String url = res.getString("resultLink");
+                JSONObject getResult = getSingleResult(url, checkInterval);
+                response.add(getResult);
+            }
+            return response;
+        } else if (request.getImage().isPresent()) {
+            //handle single images
+            JSONObject correctResult = null;
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject res = results.getJSONObject(i);
+                if (res.getString("md5").equals(request.getImage().get().getMd5Hash())) {
+                    correctResult = res;
+                }
+            }
+            String url = correctResult.getString("resultLink");
+            JSONObject getResult = getSingleResult(url, checkInterval);
+            response.add(getResult);
+            return response;
+        }
+        return null;
+    }
+
+    private static JSONObject getSingleResult(String url, int checkInterval) {
         JSONObject getResult = executeGet(url);
         while (!getResult.getString("status").equals("done")) {
             //Result not available yet

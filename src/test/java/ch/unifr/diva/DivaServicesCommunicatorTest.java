@@ -15,13 +15,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * Unit test for simple DivaServicesCommunicator.
@@ -36,10 +32,10 @@ public class DivaServicesCommunicatorTest {
         divaServicesCommunicator = new DivaServicesCommunicator(new DivaServicesConnection("http://localhost:8080",5));
         //divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch");
         List<BufferedImage> images = new ArrayList<>();
-        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\d-008.jpg"));
+        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Gmail\\IMG_20160326_172636.jpg"));
         images.add(image);
         //testCollection = divaServicesCommunicator.createCollection(images);
-        testCollection = divaServicesCommunicator.createCollection("dimyummywhelp");
+        testCollection = divaServicesCommunicator.createCollection("skyblueidealyosemitetoad");
         testImage = new DivaImage(image);
     }
 
@@ -52,67 +48,78 @@ public class DivaServicesCommunicatorTest {
         }
     }
 
+    @Test
+    public void testCreateCollection() throws IOException {
+        File folder = new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Gmail");
+        List<BufferedImage> images = new LinkedList<>();
+        for(File file : folder.listFiles()){
+            images.add(ImageIO.read(file));
+        }
+        DivaCollection collection = divaServicesCommunicator.createCollection(images);
+        System.out.println("created collection: " + collection.getName());
+    }
 
     @Test
     public void testSeamCarving() throws IOException {
         Rectangle rect = new Rectangle(141, 331, 1208, 404);
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Polygon> response = null;
         try {
-            response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(request, rect, 0.0003f, 3.0f, 4, true);
+            response = divaServicesCommunicator.runSeamCarvingTextlineExtraction(request, rect, 0.0003f, 3.0f, 4);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("nr of polygons:" + response.getHighlighter().getData().size());
+        assert response != null;
+        System.out.println("nr of polygons:" + response.getHighlighters().get(0).getData().size());
     }
 
     @Test
     public void testSauvolaBinarization() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try {
-            response = divaServicesCommunicator.runSauvolaBinarization(request, true);
+            response = divaServicesCommunicator.runSauvolaBinarization(request);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 
     @Test
     public void testHistogramTextLineExtraction() throws IOException {
         Rectangle rect = new Rectangle(141, 331, 1208, 404);
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Rectangle> response = null;
         try {
             response = divaServicesCommunicator.runHistogramTextLineExtraction(request, rect);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("nr of rectangles:" + response.getHighlighter().getData().size());
+        System.out.println("nr of rectangles:" + response.getHighlighters().get(0).getData().size());
     }
 
     @Test
     public void testMultiScaleInterestPointDetection() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Point> response = null;
         try {
             response = divaServicesCommunicator.runMultiScaleInterestPointDetection(request, "Harris", 1.0f, 5, 3, 0.000001f, 2);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("nr of points: " + response.getHighlighter().getData().size());
+        System.out.println("nr of points: " + response.getHighlighters().get(0).getData().size());
     }
 
     @Test
     public void testOtsuBinarization() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try {
-            response = divaServicesCommunicator.runOtsuBinarization(request, true);
+            response = divaServicesCommunicator.runOtsuBinarization(request);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 
     @Test
@@ -122,84 +129,84 @@ public class DivaServicesCommunicatorTest {
         images.add(image);
         DivaCollection collection = divaServicesCommunicator.createCollection(images);
         DivaServicesRequest request = new DivaServicesRequest(collection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try {
             response = divaServicesCommunicator.runOcropyPageSegmentation(request, true);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("number of segmented text lines: " + response.getOutput().size());
+        System.out.println("number of segmented text lines: " + response.getOutputs().get(0).size());
     }
 
     @Test
     public void testCannyEdgeDetection() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try {
-            response = divaServicesCommunicator.runCannyEdgeDetection(request, true);
+            response = divaServicesCommunicator.runCannyEdgeDetection(request);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 
     @Test
     public void testHistogramEnhancement() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try {
-            response = divaServicesCommunicator.runHistogramEnhancement(request, true);
+            response = divaServicesCommunicator.runHistogramEnhancement(request);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 
     //@Test
     public void testLaplacianSharpening() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try {
-            response = divaServicesCommunicator.runLaplacianSharpening(request, 4, true);
+            response = divaServicesCommunicator.runLaplacianSharpening(request, 4);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 
     @Test
     public void testOcropyBinarization() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try {
-            response = divaServicesCommunicator.runOcropyBinarization(request, true);
+            response = divaServicesCommunicator.runOcropyBinarization(request);
         } catch (MethodNotAvailableException e) {
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 
     @Test
     public void testKrakenBinarization() throws IOException {
-        DivaServicesRequest request = new DivaServicesRequest(testImage);
-        DivaServicesResponse response = null;
+        DivaServicesRequest request = new DivaServicesRequest(testCollection);
+        DivaServicesResponse<Object> response = null;
         try{
-            response = divaServicesCommunicator.runKrakenBinarization(request, true);
+            response = divaServicesCommunicator.runKrakenBinarization(request);
         } catch(MethodNotAvailableException e){
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 
     @Test
     public void testDecolorization() throws IOException {
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
-        DivaServicesResponse response = null;
+        DivaServicesResponse<Object> response = null;
         try{
-            response = divaServicesCommunicator.runDecolorization(request,0.5f, 0.001f,  true);
+            response = divaServicesCommunicator.runDecolorization(request,0.5f, 0.001f);
         } catch(MethodNotAvailableException e){
             e.printStackTrace();
         }
-        System.out.println("image size height: " + response.getImage().getHeight() + " - image size width: " + response.getImage().getWidth());
+        System.out.println("image size height: " + response.getImages().get(0).getHeight() + " - image size width: " + response.getImages().get(0).getWidth());
     }
 }

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 /**
  * Created by lunactic on 22.09.15.
@@ -36,7 +35,7 @@ public class ImageEncoding {
         return null;
     }
 
-    public static String encodeToMd5(BufferedImage image){
+    public static String encodeToMd5(BufferedImage image) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             ImageIO.write(image, "png", outputStream);
@@ -65,13 +64,13 @@ public class ImageEncoding {
         return null;
     }
 
-    public static BufferedImage getImageFromUrl(String url){
+    public static BufferedImage getImageFromUrl(String url) {
         BufferedImage image = null;
-        try{
+        try {
             URL uri = new URL(url);
             image = ImageIO.read(uri);
-        }catch (IOException ex){
-
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
         return image;
     }
