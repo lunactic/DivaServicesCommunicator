@@ -7,6 +7,9 @@ import ch.unifr.diva.request.DivaImage;
 import ch.unifr.diva.request.DivaServicesRequest;
 import ch.unifr.diva.returnTypes.*;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -320,8 +323,14 @@ public class DivaServicesCommunicator {
 
     public DivaServicesResponse<Object> runKrakenBinarization(DivaServicesRequest request) throws MethodNotAvailableException {
         JSONObject jsonRequest = createImagesOnlyRequest(request);
+        logJsonObject(jsonRequest);
         JSONObject postResult = HttpRequest.executePost(connection.getServerUrl() + properties.getProperty("krakenBinarization"), jsonRequest);
+        logJsonObject(postResult);
         List<JSONObject> result = HttpRequest.getResult(postResult, connection.getCheckInterval(), request);
+        for(JSONObject resultObject : result) {
+            logJsonObject(resultObject);
+        }
+
         List<String> imageUrls = extractVisualizationImages(result);
         List<BufferedImage> outputImages = new LinkedList<>();
         for (String imageUrl : imageUrls) {
@@ -613,7 +622,10 @@ public class DivaServicesCommunicator {
     }
 
     private void logJsonObject(JSONObject object) {
-        System.out.println(object.toString());
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(object.toString());
+        System.out.println(gson.toJson(je));
     }
 
 
