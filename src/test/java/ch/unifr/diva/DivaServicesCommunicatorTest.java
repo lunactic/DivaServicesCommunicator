@@ -29,13 +29,13 @@ public class DivaServicesCommunicatorTest {
     @BeforeClass
     public static void beforeClass() throws IOException, CollectionException {
 
-        divaServicesCommunicator = new DivaServicesCommunicator(new DivaServicesConnection("http://192.168.56.102:8080",5));
+        divaServicesCommunicator = new DivaServicesCommunicator(new DivaServicesConnection("http://localhost:8080",5));
         //divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch");
-        List<BufferedImage> images = new ArrayList<>();
-        BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Gmail\\IMG_20160326_172636.jpg"));
-        images.add(image);
+        //List<BufferedImage> images = new ArrayList<>();
+        //BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Gmail\\IMG_20160326_172636.jpg"));
+        //images.add(image);
         //testCollection = divaServicesCommunicator.createCollection(images);
-        testCollection = divaServicesCommunicator.createCollection("wildyellowishsnowdog");
+        //testCollection = divaServicesCommunicator.createCollection("wildyellowishsnowdog");
         //testImage = new DivaImage(image);
     }
 
