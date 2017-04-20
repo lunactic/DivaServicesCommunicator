@@ -22,7 +22,7 @@ public class DivaServicesCommunicatorTest{
 
     @BeforeClass
     public static void beforeClass(){
-        divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch");
+        divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch/api/v1");
     }
 
     @Before

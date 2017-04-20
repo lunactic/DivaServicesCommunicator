@@ -441,7 +441,7 @@ public class DivaServicesCommunicator {
      */
     private boolean checkImageOnServer(BufferedImage image) {
         String md5 = ImageEncoding.encodeToMd5(image);
-        String url = "http://divaservices.unifr.ch/image/" + md5;
+        String url = "http://divaservices.unifr.ch/api/v1/image/" + md5;
         JSONObject response = HttpRequest.executeGet(url);
         return response.getBoolean("imageAvailable");
     }
