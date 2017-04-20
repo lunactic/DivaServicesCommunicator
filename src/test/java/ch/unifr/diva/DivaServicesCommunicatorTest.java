@@ -31,11 +31,11 @@ public class DivaServicesCommunicatorTest {
 
         divaServicesCommunicator = new DivaServicesCommunicator(new DivaServicesConnection("http://localhost:8080",5));
         //divaServicesCommunicator = new DivaServicesCommunicator("http://divaservices.unifr.ch");
-        //List<BufferedImage> images = new ArrayList<>();
-        //BufferedImage image = ImageIO.read(new File("D:\\DEV\\UniFr\\DivaServicesCommunicator\\data\\Gmail\\IMG_20160326_172636.jpg"));
-        //images.add(image);
-        //testCollection = divaServicesCommunicator.createCollection(images);
-        //testCollection = divaServicesCommunicator.createCollection("wildyellowishsnowdog");
+        /*List<BufferedImage> images = new ArrayList<>();
+        BufferedImage image = ImageIO.read(new File("D:\\data\\images\\test\\original\\input1.jpg"));
+        images.add(image);
+        testCollection = divaServicesCommunicator.createCollection(images);*/
+        testCollection = divaServicesCommunicator.createCollection("dangerouslostvireo");
         //testImage = new DivaImage(image);
     }
 
@@ -61,7 +61,7 @@ public class DivaServicesCommunicatorTest {
 
     @Test
     public void testSeamCarving() throws IOException {
-        Rectangle rect = new Rectangle(141, 331, 1208, 404);
+        Rectangle rect = new Rectangle(440, 140, 330, 290);
         DivaServicesRequest request = new DivaServicesRequest(testCollection);
         DivaServicesResponse<Polygon> response = null;
         try {
